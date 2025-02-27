@@ -1,0 +1,12 @@
+# Ignore environment files
+.env
+__pycache__/
+
+# Ignore Power BI cache files
+*.pbix-journal
+
+# Ignore database dumps
+*.sql
+
+# Ignore virtual environment
+venv/
