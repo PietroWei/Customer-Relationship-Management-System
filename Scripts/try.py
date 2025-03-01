@@ -248,46 +248,9 @@ cursor.executemany("""
     VALUES (%s, %s, %s, %s, %s, %s);
 """, tasks)
 
-# Insert opportunities (assuming you have customer_id, product_id, and rep_id)
-opportunities = [
-    (random.randint(1, num_rows), random.randint(1, num_rows), random.randint(1, num_rows), 'new', round(random.uniform(1000, 10000), 2), '2025-12-31')
-    for _ in range(num_rows)
-]
-
-cursor.executemany("""
-    INSERT INTO opportunities (customer_id, product_id, rep_id, status, estimated_value, close_date)
-    VALUES (%s, %s, %s, %s, %s, %s);
-""", opportunities)
-
 # Commit changes to the database
 conn.commit()
-# Assuming `generate_payments` and `generate_user_sales_rep` functions are already defined
 
-# Step 1: Generate data for payments and user-sales rep relationships
-# Generate random data for payments and user-sales rep relationships
-customer_ids = list(range(1, num_rows + 1))
-payments = generate_payments(num_rows, customer_ids)   # Use customer IDs from `customers` list
-user_sales_rep = generate_user_sales_rep(num_rows, customer_ids)  # Use sales rep IDs from `sales_reps` list
-interactions = generate_interactions(num_rows, customer_ids,customer_ids,customer_ids)
-
-cursor.executemany("""
-    INSERT INTO payments (customer_id, amount, payment_date, payment_method, status)
-    VALUES (%s, %s, %s, %s, %s);
-""", payments)
-
-# Insert data into user_sales_rep table
-cursor.executemany("""
-    INSERT INTO user_sales_rep (user_id, rep_id)
-    VALUES (%s, %s);
-""", user_sales_rep)
-
-cursor.executemany("""
-    INSERT INTO interactions (customer_id, rep_id, interaction_type, interaction_date, notes, follow_up_task_id)
-    VALUES (%s, %s, %s, %s, %s, %s);
-""", interactions)
-
-# Step 4: Commit changes to both tables
-conn.commit()
 # Close connection
 cursor.close()
 conn.close()
