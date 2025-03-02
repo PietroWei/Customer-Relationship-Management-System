@@ -24,9 +24,33 @@ def add_random_error(value, nan_probability=0.05, is_unique=False):
     return value
 
 # Function to generate random customer data with errors
+
 def generate_customers(num):
     customers = []
     industries = ['Retail', 'Finance', 'Healthcare', 'Education', 'Technology']
+    
+    # List of European countries and their approximate populations
+    countries_with_population = [
+        ('Albania', 2877797), ('Andorra', 77265), ('Armenia', 2963243), ('Austria', 8917205),
+        ('Azerbaijan', 10139177), ('Belarus', 9449323), ('Belgium', 11589623), ('Bosnia and Herzegovina', 3280819),
+        ('Bulgaria', 6951482), ('Croatia', 4095267), ('Cyprus', 1207359), ('Czech Republic', 10649800),
+        ('Denmark', 5818553), ('Estonia', 1326535), ('Finland', 5523146), ('France', 67413000),
+        ('Georgia', 3989167), ('Germany', 83166711), ('Greece', 10423054), ('Hungary', 9660351),
+        ('Iceland', 376248), ('Ireland', 4937786), ('Italy', 60262770), ('Kazakhstan', 18776707),
+        ('Kosovo', 1831000), ('Latvia', 1886198), ('Liechtenstein', 38128), ('Lithuania', 2722289),
+        ('Luxembourg', 634814), ('Malta', 51464), ('Moldova', 2657637), ('Monaco', 39242),
+        ('Montenegro', 622359), ('Netherlands', 17134872), ('North Macedonia', 2083459), ('Norway', 5421241),
+        ('Poland', 38386000), ('Portugal', 10276617), ('Romania', 19237691), ('Russia', 145805947),
+        ('San Marino', 33931), ('Serbia', 8772235), ('Slovakia', 5456362), ('Slovenia', 2078654),
+        ('Spain', 46719142), ('Sweden', 10423054), ('Switzerland', 8610000), ('Turkey', 85862215),
+        ('Ukraine', 41401830), ('United Kingdom', 68497907), ('Vatican City', 800)
+    ]
+    
+    # Create a weighted list of countries based on their population
+    countries, populations = zip(*countries_with_population)
+    total_population = sum(populations)
+    weights = [population / total_population for population in populations]
+
     existing_emails = set()  # Set to track unique emails
 
     for i in range(num):
@@ -42,9 +66,13 @@ def generate_customers(num):
         phone = f"+123456{random.randint(10000, 99999)}"  # More varied phone numbers
         industry = random.choice(industries)
         
-        customers.append((name, email, phone, industry))
+        # Select a country with weighted probability
+        country = random.choices(countries, weights=weights, k=1)[0]
+        
+        customers.append((name, email, phone, industry, country))
 
     return customers
+
 
 # Function to generate random user data with errors
 def generate_users(num):
@@ -198,7 +226,7 @@ start_date = datetime(2000, 1, 1)
 end_date = datetime(2025, 1, 1)
 
 # Number of rows to insert into each table
-num_rows = 1000
+num_rows = 10000
 
 # Generate random data
 customers = generate_customers(num_rows)
@@ -224,8 +252,8 @@ cursor.executemany("""
 
 # Insert customers
 cursor.executemany("""
-    INSERT INTO customers (name, email, phone, industry) 
-    VALUES (%s, %s, %s, %s);
+    INSERT INTO customers (name, email, phone, industry,country) 
+    VALUES (%s, %s, %s, %s, %s);
 """, customers)
 
 # Insert sales reps
@@ -249,11 +277,12 @@ cursor.executemany("""
 """, tasks)
 
 # Insert opportunities (assuming you have customer_id, product_id, and rep_id)
-opportunities = [
-    (random.randint(1, num_rows), random.randint(1, num_rows), random.randint(1, num_rows), 'new', round(random.uniform(1000, 10000), 2), '2025-12-31')
-    for _ in range(num_rows)
-]
-
+#opportunities = [
+#    (random.randint(1, num_rows), random.randint(1, num_rows), random.randint(1, num_rows), 'new', round(random.uniform(1000, 10000), 2), '2025-12-31')
+#    for _ in range(num_rows)
+#]
+customer_ids = list(range(1, num_rows + 1))
+opportunities = generate_opportunities(num_rows, customer_ids,customer_ids,customer_ids)
 cursor.executemany("""
     INSERT INTO opportunities (customer_id, product_id, rep_id, status, estimated_value, close_date)
     VALUES (%s, %s, %s, %s, %s, %s);
@@ -265,7 +294,7 @@ conn.commit()
 
 # Step 1: Generate data for payments and user-sales rep relationships
 # Generate random data for payments and user-sales rep relationships
-customer_ids = list(range(1, num_rows + 1))
+
 payments = generate_payments(num_rows, customer_ids)   # Use customer IDs from `customers` list
 user_sales_rep = generate_user_sales_rep(num_rows, customer_ids)  # Use sales rep IDs from `sales_reps` list
 interactions = generate_interactions(num_rows, customer_ids,customer_ids,customer_ids)

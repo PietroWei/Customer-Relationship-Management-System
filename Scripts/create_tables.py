@@ -27,7 +27,9 @@ def create_tables(cursor):
         name VARCHAR(100) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         phone VARCHAR(20),
-        industry VARCHAR(100)
+        industry VARCHAR(100),
+        country VARCHAR(100),
+        CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     -- Creating Users Table
