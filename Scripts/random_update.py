@@ -174,8 +174,6 @@ def generate_opportunities(num, customer_ids, product_ids, sales_rep_ids):
 
     return opportunities
 
-
-
 # Function to generate random interactions with errors
 def generate_interactions(num, customer_ids, sales_rep_ids, task_ids):
     interaction_types = ['call', 'email', 'meeting']
@@ -226,14 +224,34 @@ start_date = datetime(2000, 1, 1)
 end_date = datetime(2025, 1, 1)
 
 # Number of rows to insert into each table
-num_rows = 10000
+num_customers = 20000
+num_sales_reps = 500
+num_products = 35
+num_users = 2000
+num_tasks = 10000
+num_opportunities = 15000
+num_payments = 30000
+num_interactions = 40000
 
 # Generate random data
-customers = generate_customers(num_rows)
-sales_reps = generate_sales_reps(num_rows)
-products = generate_products(num_rows)
-users = generate_users(num_rows)
-
+customers = generate_customers(num_customers)
+sales_reps = generate_sales_reps(num_sales_reps)
+products = generate_products(num_products)
+users = generate_users(num_users)
+# Insert tasks (assuming you have customer and sales rep IDs available)
+task_ids = [1, 2, 3]  # Example task_ids
+tasks = generate_tasks(num_tasks, [random.randint(1, num_customers) for _ in range(num_tasks)], [random.randint(1, num_sales_reps) for _ in range(num_tasks)])
+# Insert opportunities (assuming you have customer_id, product_id, and rep_id)
+customer_ids = list(range(1, num_customers + 1))
+product_ids = list(range(1, num_products + 1))
+sales_rep_ids = list(range(1, num_sales_reps + 1))
+opportunities = generate_opportunities(num_opportunities, customer_ids, product_ids, sales_rep_ids)
+# Insert payments (assuming you have customer IDs)
+payments = generate_payments(num_payments, customer_ids)   # Use customer IDs from `customers` list
+# Insert user-sales rep relationships
+user_sales_rep = generate_user_sales_rep(num_users, sales_rep_ids)  # Use sales rep IDs from `sales_reps` list
+# Insert interactions (assuming you have customer_id, rep_id, and task_id)
+interactions = generate_interactions(num_interactions, customer_ids, sales_rep_ids, task_ids)
 # Establish connection to the database
 conn = get_db_connection()
 cursor = conn.cursor()
@@ -267,37 +285,15 @@ cursor.executemany("""
     VALUES (%s, %s, %s, %s);
 """, products)
 
-# Insert tasks (assuming you have customer and sales rep IDs available)
-task_ids = [1, 2, 3]  # Example task_ids
-tasks = generate_tasks(num_rows, [random.randint(1, num_rows) for _ in range(num_rows)], [random.randint(1, num_rows) for _ in range(num_rows)])
-
 cursor.executemany("""
     INSERT INTO tasks (customer_id, rep_id, task_type, due_date, notes, status)
     VALUES (%s, %s, %s, %s, %s, %s);
 """, tasks)
 
-# Insert opportunities (assuming you have customer_id, product_id, and rep_id)
-#opportunities = [
-#    (random.randint(1, num_rows), random.randint(1, num_rows), random.randint(1, num_rows), 'new', round(random.uniform(1000, 10000), 2), '2025-12-31')
-#    for _ in range(num_rows)
-#]
-customer_ids = list(range(1, num_rows + 1))
-opportunities = generate_opportunities(num_rows, customer_ids,customer_ids,customer_ids)
 cursor.executemany("""
     INSERT INTO opportunities (customer_id, product_id, rep_id, status, estimated_value, close_date)
     VALUES (%s, %s, %s, %s, %s, %s);
 """, opportunities)
-
-# Commit changes to the database
-conn.commit()
-# Assuming `generate_payments` and `generate_user_sales_rep` functions are already defined
-
-# Step 1: Generate data for payments and user-sales rep relationships
-# Generate random data for payments and user-sales rep relationships
-
-payments = generate_payments(num_rows, customer_ids)   # Use customer IDs from `customers` list
-user_sales_rep = generate_user_sales_rep(num_rows, customer_ids)  # Use sales rep IDs from `sales_reps` list
-interactions = generate_interactions(num_rows, customer_ids,customer_ids,customer_ids)
 
 cursor.executemany("""
     INSERT INTO payments (customer_id, amount, payment_date, payment_method, status)
